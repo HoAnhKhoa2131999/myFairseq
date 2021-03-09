@@ -751,3 +751,8 @@ def lstm_luong_wmt_en_de(args):
     args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim", 1000)
     args.decoder_dropout_out = getattr(args, "decoder_dropout_out", 0)
     base_architecture(args)
+
+
+@register_model_architecture("lstm", "my_lstm_iwslt_de_en")
+def my_lstm_iwslt_de_en(args):
+    args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
