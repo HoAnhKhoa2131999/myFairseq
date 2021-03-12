@@ -442,12 +442,10 @@ def cli_main(
     cfg = convert_namespace_to_omegaconf(args) # Chưa biết mục đích nó làm gì từ cái tên.
 
     if args.profile: # Train bằng pytorch với GPU
-        print("Train bằng GPU ??")
         with torch.cuda.profiler.profile():
             with torch.autograd.profiler.emit_nvtx():
                 distributed_utils.call_main(cfg, main)
     else: # Train bằng CPU
-        print("Train bằng CPU ???")
         distributed_utils.call_main(cfg, main)
 
 

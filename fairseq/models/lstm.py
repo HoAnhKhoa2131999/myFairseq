@@ -107,6 +107,7 @@ class LSTMModel(FairseqEncoderDecoderModel):
             return utils.load_embedding(embed_dict, dictionary, embed_tokens)
 
         if args.encoder_embed_path:
+            print("Có sử dụng WordNet pretrain")
             pretrained_encoder_embed = load_pretrained_embedding_from_file(
                 args.encoder_embed_path, task.source_dictionary, args.encoder_embed_dim
             )
@@ -762,9 +763,11 @@ def my_lstm_iwslt_de_en(args):
 @register_model_architecture("lstm", "lstm_khanh_khoa_wordnet_en_vi")
 def lstm_khanh_khoa_wordnet_en_vi(args):
     args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 850)
+    args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
     args.encoder_layers = getattr(args, "encoder_layers", 1)
     args.encoder_dropout_out = getattr(args, "encoder_dropout_out", 0)
     args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 850)
+    args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",850 )
     args.decoder_layers = getattr(args, "decoder_layers", 1)
-    args.decoder_layers = getattr(args,"encoder-embed-path" ,"/content/wn2vec.txt" )
+    args.encoder_embed_path = getattr(args,"encoder_embed_path" ,"/content/wn2vec.txt" )
     base_architecture(args)
