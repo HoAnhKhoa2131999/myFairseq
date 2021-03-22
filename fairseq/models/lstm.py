@@ -769,3 +769,12 @@ def lstm_khanh_khoa_wordnet_en_vi(args):
     args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",850 )
     args.encoder_embed_path = getattr(args,"encoder_embed_path" ,"/content/wn2vec.txt" )
     base_architecture(args)
+
+
+@register_model_architecture("lstm", "my_baseline _lstm")
+def lstm_khanh_khoa_wordnet_en_vi(args):
+    args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 850)
+    args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
+    args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 850)
+    args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",850 )
+    base_architecture(args)
