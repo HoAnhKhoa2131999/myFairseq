@@ -771,7 +771,7 @@ def lstm_khanh_khoa_wordnet_en_vi(args):
     base_architecture(args)
 
 
-@register_model_architecture("lstm", "my_baseline _lstm")
+@register_model_architecture("lstm", "my_baseline_lstm")
 def lstm_khanh_khoa_wordnet_en_vi(args):
     args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 850)
     args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
