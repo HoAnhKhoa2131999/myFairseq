@@ -778,3 +778,61 @@ def lstm_khanh_khoa_wordnet_en_vi(args):
     args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 850)
     args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",850 )
     base_architecture(args)
+
+@register_model_architecture("lstm", "my_baseline_lstm_64")
+def my_baseline_lstm_64(args):
+    args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 64)
+    args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
+    args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 64)
+    args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",64)
+    args.encoder_embed_path = getattr(args,"encoder_embed_path" ,"/content/pretrain.txt" )
+    base_architecture(args)
+
+
+@register_model_architecture("lstm", "my_baseline_lstm_128")
+def my_baseline_lstm_128(args):
+    args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 128)
+    args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
+    args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 128)
+    args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",128)
+    args.encoder_embed_path = getattr(args,"encoder_embed_path" ,"/content/pretrain.txt" )
+    base_architecture(args)
+
+
+@register_model_architecture("lstm", "my_baseline_lstm_256")
+def my_baseline_lstm_256(args):
+    args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 256)
+    args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
+    args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 256)
+    args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",256)
+    args.encoder_embed_path = getattr(args,"encoder_embed_path" ,"/content/pretrain.txt" )
+    base_architecture(args)
+
+
+@register_model_architecture("lstm", "my_baseline_lstm_512")
+def my_baseline_lstm_512(args):
+    args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 512)
+    args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
+    args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 512)
+    args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",512)
+    args.encoder_embed_path = getattr(args,"encoder_embed_path" ,"/content/pretrain.txt" )
+    base_architecture(args)
+
+@register_model_architecture("lstm", "my_baseline_lstm_1024")
+def my_baseline_lstm_1024(args):
+    args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 1024)
+    args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
+    args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 1024)
+    args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",1024)
+    args.encoder_embed_path = getattr(args,"encoder_embed_path" ,"/content/pretrain.txt" )
+    base_architecture(args)
+
+@register_model_architecture("lstm", "my_baseline_lstm_2048")
+def my_baseline_lstm_2048(args):
+    args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 2048)
+    args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
+    args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 2048)
+    args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",2048)
+    args.encoder_embed_path = getattr(args,"encoder_embed_path" ,"/content/pretrain.txt" )
+    base_architecture(args)
+
