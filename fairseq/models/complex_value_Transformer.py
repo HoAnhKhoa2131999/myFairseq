@@ -489,7 +489,7 @@ class TransformerEncoder(FairseqEncoder):
         src_pos = get_position(src_tokens)
 
         # Mở rộng thêm chiều thứ 2
-        pos = torch.unsqueeze(torch.LongTensor(src_pos), 2)  # size (64, 52, 1)
+        pos = torch.unsqueeze(torch.cuda.LongTensor(src_pos), 2)  # size (64, 52, 1)
 
         enc_output_phase = torch.mul(pos.float(),
                                      enc_output_phase)  # (64 * 52 * 1) * ( 64 * 52 * 512) --> 64  * 52 * 512  --> đây là nhân element-wise
@@ -855,7 +855,7 @@ class TransformerDecoder(FairseqIncrementalDecoder):
 
 
         tgt_pos = get_position(prev_output_tokens)
-        pos = torch.unsqueeze(torch.LongTensor(tgt_pos), 2)
+        pos = torch.unsqueeze(torch.cuda.LongTensor(tgt_pos), 2)
 
         dec_output_phase = torch.mul(pos.float(), dec_output_phase)  # size = 64 x 51 x 512
         cos = torch.cos(dec_output_phase)
