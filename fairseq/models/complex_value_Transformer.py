@@ -11,6 +11,7 @@ import torch.nn as nn
 from fairseq import utils
 from fairseq.models import (
     FairseqEncoder,
+    FairseqDecoder,
     FairseqEncoderDecoderModel,
     FairseqIncrementalDecoder,
     register_model,
@@ -339,7 +340,8 @@ class TransformerModel(FairseqEncoderDecoderModel):
         which are not supported by TorchScript.
         """
         encoder_out = self.encoder(
-            src_tokens
+            src_tokens,
+            src_lengths
         )
         decoder_out = self.decoder(
             prev_output_tokens,
@@ -450,6 +452,7 @@ class TransformerEncoder(FairseqEncoder):
     def forward(
             self,
             src_tokens,
+            src_lengths,
             return_attns=False ):
         """
         Args:
@@ -489,10 +492,9 @@ class TransformerEncoder(FairseqEncoder):
         src_pos = get_position(src_tokens)
 
         # Mở rộng thêm chiều thứ 2
+        # pos = torch.unsqueeze(torch.LongTensor(src_pos), 2)  # size (64, 52, 1)
         pos = torch.unsqueeze(torch.cuda.LongTensor(src_pos), 2)  # size (64, 52, 1)
-
-        enc_output_phase = torch.mul(pos.float(),
-                                     enc_output_phase)  # (64 * 52 * 1) * ( 64 * 52 * 512) --> 64  * 52 * 512  --> đây là nhân element-wise
+        enc_output_phase = torch.mul(pos.float(),enc_output_phase)  # (64 * 52 * 1) * ( 64 * 52 * 512) --> 64  * 52 * 512  --> đây là nhân element-wise
 
         cos = torch.cos(enc_output_phase)
         sin = torch.sin(enc_output_phase)
@@ -516,12 +518,14 @@ class TransformerEncoder(FairseqEncoder):
         # # `forward` so we use a dictionary instead.
         # # TorchScript does not support mixed values so the values are all lists.
         # # The empty list is equivalent to None.
+        enc_output_real=enc_output_real.permute(1,0,2)
+        enc_output_phase=enc_output_phase.permute(1,0,2)
         return {
-            "slf_attn_mask": slf_attn_mask,  # B x T
-            "enc_output_real": enc_output_real,  # B x T x C
-            "enc_output_phase" : enc_output_phase,
+            "slf_attn_mask": [slf_attn_mask],  # B x T
+            "enc_output_real": [enc_output_real],  # B x T x C
+            "enc_output_phase" : [enc_output_phase],
             "encoder_states": enc_slf_attn_list,  # List[T x B x C]
-            "src_tokens": src_tokens,
+            "src_tokens": [src_tokens],
             "src_lengths": [],
         }
 
@@ -541,21 +545,21 @@ class TransformerEncoder(FairseqEncoder):
         if len(encoder_out["slf_attn_mask"]) == 0:
             new_slf_attn_mask = []
         else:
-            new_slf_attn_mask = [encoder_out["slf_attn_mask"][0].index_select(1, new_order)]
+            new_slf_attn_mask = [encoder_out["slf_attn_mask"][0].index_select(0, new_order)]
 
         # enc_output_real
         if len(encoder_out["enc_output_real"]) == 0:
             new_enc_output_real = []
         else:
             new_enc_output_real = [
-                encoder_out["enc_output_real"][0].index_select(0, new_order)]
+                encoder_out["enc_output_real"][0].index_select(1, new_order)]
 
         # enc_output_phase
         if len(encoder_out["enc_output_phase"]) == 0:
             new_enc_output_phase = []
         else:
             new_enc_output_phase = [
-                encoder_out["enc_output_phase"][0].index_select(0, new_order)
+                encoder_out["enc_output_phase"][0].index_select(1, new_order)
             ]
 
         if len(encoder_out["src_tokens"]) == 0:
@@ -613,7 +617,7 @@ class TransformerEncoder(FairseqEncoder):
         return state_dict
 
 
-class TransformerDecoder(FairseqIncrementalDecoder):
+class TransformerDecoder(FairseqDecoder):
     """
     Transformer decoder consisting of *args.decoder_layers* layers. Each layer
     is a :class:`TransformerDecoderLayer`.
@@ -771,15 +775,15 @@ class TransformerDecoder(FairseqIncrementalDecoder):
                 - the decoder's output of shape `(batch, tgt_len, vocab)`
                 - a dictionary with any model-specific outputs
         """
-        x = self.extract_features(
-            prev_output_tokens,
-            encoder_out=encoder_out,
+        x, extra = self.extract_features(
+            prev_output_tokens,  # 64 x 30
+            encoder_out=encoder_out,  # từ điển chứa : encoder_out, encoder_padding_mask encoder_state
             # incremental_state=incremental_state,
             # full_context_alignment=full_context_alignment,
             # alignment_layer=alignment_layer,
             # alignment_heads=alignment_heads,
         )
-        return [x]
+        return x, extra
 
     def extract_features(
         self,
@@ -846,7 +850,7 @@ class TransformerDecoder(FairseqIncrementalDecoder):
 
         slf_attn_mask = (slf_attn_mask_keypad + slf_attn_mask_subseq).gt(0)
 
-        dec_enc_attn_mask = get_attn_key_pad_mask(seq_k= encoder_out['src_tokens'], seq_q=prev_output_tokens, padding_idx = self.padding_idx)
+        dec_enc_attn_mask = get_attn_key_pad_mask(seq_k= encoder_out['src_tokens'][0], seq_q=prev_output_tokens, padding_idx = self.padding_idx)
 
         dec_output_phase = self.embed_positions(prev_output_tokens)
 
@@ -855,11 +859,12 @@ class TransformerDecoder(FairseqIncrementalDecoder):
 
 
         tgt_pos = get_position(prev_output_tokens)
+        # pos = torch.unsqueeze(torch.LongTensor(tgt_pos), 2)
         pos = torch.unsqueeze(torch.cuda.LongTensor(tgt_pos), 2)
-
         dec_output_phase = torch.mul(pos.float(), dec_output_phase)  # size = 64 x 51 x 512
-        cos = torch.cos(dec_output_phase)
+        cos = torch.cos(dec_output_phase).to()
         sin = torch.sin(dec_output_phase)
+
 
         # f(j, pos) = f_we(j) (.) f_pe(j, pos) --> Nhan element-wise
         dec_output_real = dec_output_real_real * cos
@@ -868,7 +873,7 @@ class TransformerDecoder(FairseqIncrementalDecoder):
         # decoder layers
         for dec_layer in self.layers:
             dec_output_real,dec_output_phase, dec_slf_attn, dec_enc_attn = dec_layer(
-                dec_output_real,dec_output_phase, encoder_out["enc_output_real"], encoder_out['enc_output_phase'],
+                dec_output_real,dec_output_phase, encoder_out["enc_output_real"][0].permute(1,0,2), encoder_out['enc_output_phase'][0].permute(1,0,2),
                 non_pad_mask=non_pad_mask,
                 slf_attn_mask=slf_attn_mask,
                 dec_enc_attn_mask=dec_enc_attn_mask)
@@ -882,7 +887,7 @@ class TransformerDecoder(FairseqIncrementalDecoder):
         seq_logit = self.output_projection(dec_output)
 
 
-        return seq_logit
+        return seq_logit, None
 
     def output_layer(self, features):
         """Project features to the vocabulary size."""
