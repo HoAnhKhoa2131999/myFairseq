@@ -773,10 +773,10 @@ def lstm_khanh_khoa_wordnet_en_vi(args):
 
 @register_model_architecture("lstm", "my_baseline_lstm")
 def lstm_khanh_khoa_wordnet_en_vi(args):
-    args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 850)
+    args.encoder_embed_dim = getattr(args, "encoder_embed_dim", 512)
     args.encoder_bidirectional = getattr(args, "encoder_bidirectional", True)
-    args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 850)
-    args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",850 )
+    args.decoder_embed_dim = getattr(args, "decoder_embed_dim", 512)
+    args.decoder_out_embed_dim = getattr(args, "decoder_out_embed_dim",512)
     base_architecture(args)
 
 @register_model_architecture("lstm", "my_baseline_lstm_64")
